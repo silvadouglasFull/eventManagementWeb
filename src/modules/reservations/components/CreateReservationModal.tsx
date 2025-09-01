@@ -2,10 +2,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type RoomDTO } from '@modules/roms/dtos';
 import { romsService } from '@modules/roms/services';
-import React, { useEffect, useState } from 'react';
+import type { UserDTO } from '@modules/users/dtos';
+import { usersService } from '@modules/users/services';
+import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { Alert, Button, Form, Modal, Spinner } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { type CreateReservationFormData, createReservationSchema } from '../schemas/createReservationSchema';
+import { createReservationSchema, type CreateReservationFormData } from '../schemas/createReservationSchema';
 import { reservationsService } from '../services';
 
 interface CreateReservationModalProps {
@@ -19,21 +21,33 @@ const CreateReservationModal: React.FC<CreateReservationModalProps> = ({ show, o
     const [isLoadingRooms, setIsLoadingRooms] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
+    const [users, setUsers] = useState<UserDTO[]>([])
+    const [selected, setSelected] = useState<string[]>([]);
     const {
         register,
         handleSubmit,
         formState: { errors },
-        reset,
+        reset, // Add reset to the destructuring
     } = useForm<CreateReservationFormData>({
         resolver: zodResolver(createReservationSchema),
     });
+    const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        const selectedOptions = event.target.options;
+        const values = [];
 
+        for (let i = 0, len = selectedOptions.length; i < len; i++) {
+            if (selectedOptions[i].selected) {
+                values.push(selectedOptions[i].value);
+            }
+        }
+
+        setSelected(values);
+    };
     useEffect(() => {
         const fetchRooms = async () => {
             try {
                 const fetchedRooms = await romsService.getRooms();
-                setRooms(fetchedRooms);
+                setRooms(fetchedRooms.data);
             } catch (err) {
                 if (err instanceof Error) setError(err.message)
                 else setError('An unexpected error occurred while fetching rooms.')
@@ -46,7 +60,21 @@ const CreateReservationModal: React.FC<CreateReservationModalProps> = ({ show, o
             fetchRooms();
         }
     }, [show]);
-
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await usersService.getUsers();
+                setUsers(fetchedUsers);
+            } catch (err) {
+                if (err instanceof Error) setError(err.message)
+                else setError('An unexpected error occurred while fetching users.')
+            }
+            setIsLoadingRooms(false);
+        }
+        if (show) {
+            fetchUsers()
+        }
+    }, [show])
     const onSubmit = async (data: CreateReservationFormData) => {
         setIsSubmitting(true);
         setError(null);
@@ -55,7 +83,7 @@ const CreateReservationModal: React.FC<CreateReservationModalProps> = ({ show, o
                 room_id: data.room_id,
                 start_date: data.start_date,
                 end_date: data.end_date,
-                guests: data.guest_emails,
+                guests: selected,
             });
             onSuccess();
             onHide();
@@ -86,7 +114,7 @@ const CreateReservationModal: React.FC<CreateReservationModalProps> = ({ show, o
                                 isInvalid={!!errors.room_id}
                             >
                                 <option value="">Select a room</option>
-                                {rooms.map(room => (
+                                {rooms.length && rooms?.map(room => (
                                     <option key={room.id} value={room.id}>
                                         {room.name}
                                     </option>
@@ -124,15 +152,14 @@ const CreateReservationModal: React.FC<CreateReservationModalProps> = ({ show, o
 
                     <Form.Group className="mb-3">
                         <Form.Label>Guest Emails (comma-separated)</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="user1@example.com, user2@example.com"
-                            {...register('guest_emails')}
-                            isInvalid={!!errors.guest_emails}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.guest_emails?.message}
-                        </Form.Control.Feedback>
+                        <Form.Select onChange={handleSelectChange}>
+                            <option>Open this select menu</option>
+                            {users.length && users?.map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.email}
+                                </option>
+                            ))}
+                        </Form.Select>
                     </Form.Group>
                 </Form>
             </Modal.Body>
