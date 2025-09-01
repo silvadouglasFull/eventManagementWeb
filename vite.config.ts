@@ -16,6 +16,7 @@ export default defineConfig({
       "@": root,
       "@components": `${root}/components`,
       "@constants/*": `${root}/constants/*`,
+      "@core/*": `${root}/core/*`,
       "@assets/*": `${root}/assets/*`,
       "@components/*": `${root}/components/*`,
       "@config/*": `${root}/config/*`,

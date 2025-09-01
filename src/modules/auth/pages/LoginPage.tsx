@@ -24,8 +24,11 @@ const LoginPage: React.FC = () => {
         setError(null);
         try {
             await login(data.email, data.password);
-        } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred.');
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            }
+            setError('An unexpected error occurred.')
         }
     };
 

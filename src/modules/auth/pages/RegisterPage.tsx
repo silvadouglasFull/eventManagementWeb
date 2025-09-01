@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { type CreateUserFormData, createUserSchema } from '../schemas/createUserSchema';
-import { AuthService } from '../services/AuthService';
+import { authService } from '../services';
 
 const RegisterPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -25,10 +25,13 @@ const RegisterPage: React.FC = () => {
         setSuccess(null);
 
         try {
-            await AuthService.createUser(data);
+            await authService.createUser(data);
             setSuccess('User created successfully! You can now log in.');
-        } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred.');
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            }
+            setError('An unexpected error occurred.')
         } finally {
             setIsLoading(false);
         }

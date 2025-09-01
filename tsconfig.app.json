@@ -5,6 +5,7 @@
       "@assets/*": ["./src/assets/*"],
       "@components/*": ["./src/components/*"],
       "@constants/*": ["./src/constants/*"],
+      "@core/*": ["./src/core/*"],
       "@context/*": ["./src/context/*"],
       "@config/*": ["./src/config/*"],
       "@modules/*": ["./src/modules/*"],

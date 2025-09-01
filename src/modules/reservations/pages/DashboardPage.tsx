@@ -1,8 +1,8 @@
 // src/modules/reservations/pages/DashboardPage.tsx
 import { type ReservationDTO } from '@modules/reservations/dtos/ReservationDTO';
-import { ReservationService } from '@modules/reservations/services/ReservationService';
 import React, { useEffect, useState } from 'react';
 import { Alert, Container, Spinner, Table } from 'react-bootstrap';
+import { reservationsService } from '../services';
 
 const DashboardPage: React.FC = () => {
     const [reservations, setReservations] = useState<ReservationDTO[]>([]);
@@ -12,10 +12,10 @@ const DashboardPage: React.FC = () => {
     useEffect(() => {
         const fetchReservations = async () => {
             try {
-                const data = await ReservationService.getReservations();
+                const data = await reservationsService.getReservations();
                 setReservations(data);
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err) {
+                if (err instanceof Error) setError(err.message);
             } finally {
                 setIsLoading(false);
             }

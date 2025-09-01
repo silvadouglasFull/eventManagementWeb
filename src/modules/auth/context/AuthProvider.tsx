@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthService } from '../services/AuthService';
+import { authService } from '../services';
 import { AuthContext } from './AuthContext';
 import type { User } from './types';
 
@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     const login = async (email: string, password: string) => {
         setIsLoading(true);
         try {
-            const response = await AuthService.login({ email, password });
+            const response = await authService.login({ email, password });
 
             sessionStorage.setItem('isAuthenticated', String(response.success));
             setIsAuthenticate(response.success);
